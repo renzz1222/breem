@@ -26,6 +26,8 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.Border;
   import java.sql.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Book {
       static String first;
@@ -33,7 +35,7 @@ public class Book {
       static String last;
       static String phoneNo;
       static String packageTP;
-      static String roomTP;
+      static String roomTP = "";
       static String utils = "";
       static int electric = 0;
       
@@ -41,12 +43,14 @@ public class Book {
       static int utilPrice;
       static int roomPrice = 0;
       static String reservationTP = "";
+
       
       static String burnerL = "";
       static String Videoke = "";
       static String Bonfire = "";
       
       static String weekWhat = "";
+      static int reset = 0;
       
       static int PackagePrice = 0;
 
@@ -62,14 +66,32 @@ public class Book {
       static JRadioButton opt9 = new JRadioButton("₱500 Use of Video (Strictly until 10pm only)");
       static JRadioButton opt10 = new JRadioButton("Bonfire (Free)");
 
-      static JCheckBox check1 = new JCheckBox("Additional 500 for extra");
-      static JCheckBox check2 = new JCheckBox("Additional 500 for extra");
-      static JCheckBox check3 = new JCheckBox("Additional 500 for extra");
-      static JCheckBox check4 = new JCheckBox("Additional 500 for extra");
+      static JRadioButton check1 = new JRadioButton("Select Room 1");
+      static JRadioButton check2 = new JRadioButton("Select Room 2");
+      static JRadioButton check3 = new JRadioButton("Select Room 3");
+      static JRadioButton check4 = new JRadioButton("Select Room 4");
       
       static String mattres = " ";
       
       
+      //FOR PAYMENT INSERTION
+      static String paymentMethod = "";
+      static LocalDate paymentDate = null;
+      static int ReservationFee = 0;
+      static int Amount = 0 ;
+      static String packageCode = "";
+      
+      //FOR RESERVATION INSERTION
+      static LocalDate CheckIN = null;     
+      static LocalDate CheckOUT = null;   
+      static String Status = "Pending";
+      
+      //FOR ROOM INSERTION
+      
+        static int roomID = 0;
+        static String RoomNo = "";
+        static String utilityOpt = "";
+        static int utilityID = 0;
       
        static JTextField chickin = new JTextField();
        static JTextField chickout = new JTextField();
@@ -80,9 +102,9 @@ public class Book {
       
        static int exist = 0;
        
-         String url = "jdbc:mysql://localhost:3306/f_project";
-         String password = "1234";
-         String username = "root";
+        static String url = "jdbc:mysql://localhost:3306/projectsystem";
+        static String password = "1234";
+        static String username = "root";
     
        
         public Book(){
@@ -90,16 +112,188 @@ public class Book {
         }
         
         
-        void createConnection(){
+        static void createConnection(){
             try {     
             Connection con = DriverManager.getConnection(url, username, password);          
             Statement stmt = con.createStatement();
+            System.out.println("Database Connection Success");
             
             
             } catch (SQLException ex) {  
             Logger.getLogger(Book.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Database Connection Successs");
             }
+        }
+        
+        public static void INSERTION(){
+                      
+        try {
+            Connection con = DriverManager.getConnection(url, username, password);    
+             String insertCustomer = "INSERT INTO customer(LastName, FirstName, MiddleName, ContactNo) VALUES (?, ?, ?, ?)";
+             PreparedStatement stmt = con.prepareStatement(insertCustomer, Statement.RETURN_GENERATED_KEYS);
+                stmt.setString(1, last);
+                stmt.setString(2, first);
+                stmt.setString(3, middle);
+                stmt.setString(4, phoneNo);
+                stmt.executeUpdate();
+                
+                int customerId = 0; //GET THE RECENT INSERT
+                ResultSet rs = stmt.getGeneratedKeys();
+                if (rs.next()) {
+                customerId = rs.getInt(1); 
+                 }
+                
+                System.out.println("CustomerID: " + customerId);
+                
+                //PAYMENTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+                String insertPayment = "INSERT INTO payment( PaymentMethod, PaymentDate, ReservationFee, Amount) VALUES (?, ?, ?, ?)";
+                PreparedStatement pStmt = con.prepareStatement(insertPayment, Statement.RETURN_GENERATED_KEYS);
+                pStmt.setString(1, paymentMethod);
+                pStmt.setDate(2,  Date.valueOf(paymentDate));
+                pStmt.setInt(3, ReservationFee);
+                pStmt.setInt(4, Amount);
+                pStmt.executeUpdate();
+                
+                int paymentId = 0; //GET THE RECENT INSERT
+                ResultSet rsP = pStmt.getGeneratedKeys();
+                if (rsP.next()) {
+                paymentId = rsP.getInt(1); 
+                 }
+                
+                     
+                //RESERVATIONNNNNNNNNNNNNNNNNNNNNNNNNNNN
+                String insertReservation = "INSERT INTO reservation(CheckInDate, CheckOutDate, ReservationStatus, CustomerID, PackageCode, PaymentID) VALUES (?, ?, ?, ?, ?, ?)";
+                PreparedStatement iStmt = con.prepareStatement(insertReservation, Statement.RETURN_GENERATED_KEYS);
+                iStmt.setDate(1, Date.valueOf(CheckIN));
+                iStmt.setDate(2, Date.valueOf(CheckOUT));
+                iStmt.setString(3, Status);
+                iStmt.setInt(4, customerId);
+                iStmt.setString(5, packageCode);
+                iStmt.setInt(6, paymentId);
+                iStmt.executeUpdate();
+                
+                int reservationId = 0; //GET THE RECENT INSERT
+                ResultSet rRsP = iStmt.getGeneratedKeys();
+                if (rRsP.next()) {
+                reservationId = rRsP.getInt(1); 
+                 }
+                
+                if (roomTP.isEmpty()){
+                    
+             
+                } else {
+                String insertRoom = "INSERT INTO room_order( RoomNo, ReservationNo) VALUES (?, ?)";
+                PreparedStatement rStmt = con.prepareStatement(insertRoom);
+                
+                 if(check1.isSelected()){
+                RoomNo = "101";
+                rStmt.setString(1, RoomNo);
+                rStmt.setInt(2, reservationId);
+                rStmt.executeUpdate();
+                }
+                if(check2.isSelected()){
+                RoomNo = "102";
+                rStmt.setString(1, RoomNo);
+                rStmt.setInt(2, reservationId);
+                rStmt.executeUpdate();
+                }
+                       if(check3.isSelected()){
+                RoomNo = "103";
+                rStmt.setString(1, RoomNo);
+                rStmt.setInt(2, reservationId);
+                rStmt.executeUpdate();
+                }
+                          if(check4.isSelected()){
+                RoomNo = "104";
+                rStmt.setString(1, RoomNo);
+                rStmt.setInt(2, reservationId);
+                rStmt.executeUpdate();
+                }
+                    
+                }
+                
+                if (utils.isEmpty()){
+                    
+             
+                } else {
+                    
+                String insertUtility = "INSERT INTO utility_order(UtilityID, ReservationNo) VALUES (?, ?)";
+                PreparedStatement inStmt = con.prepareStatement(insertUtility);
+                
+                if(opt1.isSelected()){
+                utilityID = 2000;
+                inStmt.setInt(1, utilityID);
+                inStmt.setInt(2, reservationId);
+                inStmt.executeUpdate(); 
+                }
+                
+                if(opt2.isSelected()){
+                utilityID = 2001;
+                inStmt.setInt(1, utilityID);
+                inStmt.setInt(2, reservationId);
+                inStmt.executeUpdate();
+                }
+                
+                if(opt3.isSelected()){
+                utilityID = 2002;
+                inStmt.setInt(1, utilityID);
+                inStmt.setInt(2, reservationId);
+                inStmt.executeUpdate();
+                }
+                
+                 if(opt4.isSelected()){
+                utilityID = 2003;
+                inStmt.setInt(1, utilityID);
+                inStmt.setInt(2, reservationId);
+                inStmt.executeUpdate(); 
+                }
+                 
+                  if(opt5.isSelected()){
+                utilityID = 2004;
+                inStmt.setInt(1, utilityID);
+                inStmt.setInt(2, reservationId);
+                inStmt.executeUpdate(); 
+                }
+                  
+                 if(opt6.isSelected()){
+                utilityID = 2005;
+                inStmt.setInt(1, utilityID);
+                inStmt.setInt(2, reservationId);
+                inStmt.executeUpdate(); 
+                }
+                 
+                if(opt7.isSelected()){
+                utilityID = 2006;
+                inStmt.setInt(1, utilityID);
+                inStmt.setInt(2, reservationId);
+                inStmt.executeUpdate(); 
+                }
+                
+                if(opt8.isSelected()){
+                utilityID = 2007;
+                inStmt.setInt(1, utilityID);
+                inStmt.setInt(2, reservationId);
+                inStmt.executeUpdate(); 
+                }
+                
+                if(opt9.isSelected()){
+                utilityID = 2008;
+                inStmt.setInt(1, utilityID);
+                inStmt.setInt(2, reservationId);
+                inStmt.executeUpdate(); 
+                }
+                
+                        
+                }
+                
+                
+                
+                
+                
+                
+            } catch (SQLException ex) {
+                ex.printStackTrace(); 
+            } 
         }
         
       public static void Contact(){
@@ -338,7 +532,7 @@ public class Book {
             
             Room();
             frame.dispose();
-          
+            
             
         }
         });
@@ -389,20 +583,59 @@ public class Book {
           for (int i = 0; i < startDayOfWeek; i++) {
             calenBody.add(new JLabel(""));
     }
-            
+          
+          // COOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+          
+        Set<LocalDate> bookedDates = new HashSet<>();
+
+          try {
+              
+              Connection con = DriverManager.getConnection(url, username, password); 
+               Statement stmt = con.createStatement();
+               ResultSet rs = stmt.executeQuery("SELECT CheckInDate FROM reservation"); 
+
+              while (rs.next()) {
+                  LocalDate date = rs.getDate("CheckInDate").toLocalDate();
+                  bookedDates.add(date);
+              
+          }
+          } catch (SQLException e) {
+              e.printStackTrace();
+          }
+          
+        final JButton[] lastClickedButton = {null};
         for (int day = 1; day <= daysInMonth; day++) {
+        LocalDate currentDate = LocalDate.of(2025, month, day);
         JButton dayLabel = new JButton(String.format("%2d", day));
         dayLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         dayLabel.setOpaque(true);
         dayLabel.setBackground(Color.white);
         dayLabel.setFocusPainted(false);
+        
+        
+        if (bookedDates.contains(currentDate)) {
+        dayLabel.setBackground(Color.RED);
+        dayLabel.setForeground(Color.black);
+        dayLabel.setEnabled(false);
+         } else {
+        dayLabel.setBackground(Color.WHITE);
+        dayLabel.setForeground(Color.black);
+        }
+        
         calenBody.add(dayLabel);
         int finalDay = day;
         dayLabel.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
+          
+                
+                if (lastClickedButton[0] != null) {
+                lastClickedButton[0].setBackground(Color.WHITE);
+                }
                 
                 LocalDate selectedDate = LocalDate.of(2025, month, finalDay);
                 DayOfWeek dayOfWeek = selectedDate.getDayOfWeek();
+                
+                
                 
                 if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
                     weekWhat = "Weekends";
@@ -417,7 +650,11 @@ public class Book {
                 String ceckin = "  "+String.valueOf(month) + " / " + text + " / "+ "2025";
                 chickin.setText(ceckin);
                 chickout.setText(ceckin);
-                System.out.print(packageTP);
+                
+                //checkIN
+                 CheckIN = LocalDate.of(2025, month, Integer.parseInt(text));
+                 CheckOUT = LocalDate.of(2025, month, Integer.parseInt(text));
+                
                 
                 }else{
                 int text = Integer.parseInt(dayLabel.getText().trim()) + 1;
@@ -428,9 +665,19 @@ public class Book {
                 chickin.setText(ceckin);
                 chickout.setText(ceckout);
                 
-                
+                CheckIN = LocalDate.of(2025, month, texts);
+                CheckOUT = LocalDate.of(2025, month, text);
+                //checkIN
+             
+                //greeen button
+       
+              
+              
+
         
                 }
+                         dayLabel.setBackground(Color.GREEN);
+                           lastClickedButton[0] = dayLabel;
             }
         });
         
@@ -486,21 +733,8 @@ public class Book {
         }
         });
         
-        JButton change = new JButton("Change");
-        change.setBackground(new Color(0x556B2F));
-        change.setFont(new Font("Tohoma", Font.BOLD, 10));
-        change.setForeground(Color.white);
-        change.setFocusPainted(false);
-        change.setBorderPainted(false);
-        change.addActionListener(new ActionListener(){
-        @Override
-        public void actionPerformed(ActionEvent e){
-
-            
-        }
-        });
+  
            
-         change.setBounds(490,538,80,20);
          confirm.setBounds(390,538,80,20);
          
          
@@ -982,6 +1216,42 @@ public class Book {
         @Override
         public void actionPerformed(ActionEvent e){
             
+              if(check1.isSelected()){
+                roomTP += "Room #1, " ;
+                roomPrice += 1500;
+                check1.setEnabled(true);
+
+            }
+        
+
+            
+            if(check2.isSelected()){
+                roomTP += "Room #2, " ;
+                roomPrice += 1500;
+                check2.setEnabled(true);
+
+            }
+
+            
+            if(check3.isSelected()){
+            roomTP += "Room #3, " ;
+            roomPrice += 2000;
+            check3.setEnabled(true);
+
+        }
+      
+            if(check4.isSelected()){
+                roomTP += "Room #4, " ;
+                check4.setEnabled(true);
+
+            if(packageTP == "DayTour" || packageTP == "DayNight"){
+                roomPrice += 300;
+            } else {
+                roomPrice += 500;
+            }
+        }
+            
+            System.out.print(roomTP);
             Utilities();
             frame.dispose();
           
@@ -1013,96 +1283,9 @@ public class Book {
         room4.setBounds(795,30,240,360);
         
         //====================================================/ ROOM
-        JButton selectRoom1 = new JButton("Select");
-        selectRoom1.setBackground(new Color(0x556B2F));
-        selectRoom1.setFont(new Font("Tohoma", Font.BOLD, 20));
-        selectRoom1.setForeground(Color.white);
-        selectRoom1.setFocusPainted(false);
-        selectRoom1.setBorderPainted(false);
-        selectRoom1.addActionListener(new ActionListener(){
-        @Override
-        public void actionPerformed(ActionEvent e){
-            int add = 0;
             
-            if(check1.isSelected()){
-                add = 500;
-                mattres = " - Additional mattress";
-            }
-            
-            roomTP = "Room #1";
-            roomPrice = 1500 + add;
-            Utilities();
-        }
-        });
-        JButton selectRoom2 = new JButton("Select");
-        selectRoom2.setBackground(new Color(0x556B2F));
-        selectRoom2.setFont(new Font("Tohoma", Font.BOLD, 20));
-        selectRoom2.setForeground(Color.white);
-        selectRoom2.setFocusPainted(false);
-        selectRoom2.setBorderPainted(false);
-        selectRoom2.addActionListener(new ActionListener(){
-        @Override
-        public void actionPerformed(ActionEvent e){
-            
-            int add = 0;
-            
-            if(check2.isSelected()){
-                add = 500;
-                mattres = " - Additional mattress";
-            }
-            roomTP = "Room #2";
-            roomPrice = 1500 + add;
-                      Utilities();
-        }
-        });
-        JButton selectRoom3 = new JButton("Select");
-        selectRoom3.setBackground(new Color(0x556B2F));
-        selectRoom3.setFont(new Font("Tohoma", Font.BOLD, 20));
-        selectRoom3.setForeground(Color.white);
-        selectRoom3.setFocusPainted(false);
-        selectRoom3.setBorderPainted(false);
-        selectRoom3.addActionListener(new ActionListener(){
-        @Override
-        public void actionPerformed(ActionEvent e){
-            
-            int add = 0;
-            
-            if(check3.isSelected()){
-                add = 500;
-                mattres = " - Additional mattress";
-            }
-            roomTP = "Room #3";
-            roomPrice = 2000 + add;
-                        Utilities();
-        }
-        });
+          
         
-        JButton selectRoom4 = new JButton("Select");
-        selectRoom4.setBackground(new Color(0x556B2F));
-        selectRoom4.setFont(new Font("Tohoma", Font.BOLD, 20));
-        selectRoom4.setForeground(Color.white);
-        selectRoom4.setFocusPainted(false);
-        selectRoom4.setBorderPainted(false);
-        selectRoom4.addActionListener(new ActionListener(){
-        @Override
-        public void actionPerformed(ActionEvent e){
-            int add = 0;
-            
-            if(check4.isSelected()){
-                add = 500;
-                mattres = " - Additional mattress";
-            }
-            
-            roomTP = "Room #4";
-            if(packageTP == "DayTour" || packageTP == "DayNight"){
-                roomPrice = 300+add;
-            } else {
-                roomPrice = 500+add;
-            }
-           
-            Utilities();
-        }
-        });
         
         
         
@@ -1131,23 +1314,21 @@ public class Book {
         
         
         image1.setBackground(Color.red);
-        check1 = new JCheckBox("Additional 500 for extra");
         check1.setOpaque(false);
-        JLabel mat1 = new JLabel("mattress");
         
         room1.add(image1);
         room1.add(roomL1);
         room1.add(descL1);
         room1.add(descL11);
         room1.add(check1);
-        room1.add(mat1);
+
         
         roomL1.setBounds(40,5,200,50);
         image1.setBounds(20,50,200,130);
         descL1.setBounds(33,180,200,50);
         descL11.setBounds(33,210,200,50);
         check1.setBounds(40,250,200,50);
-        mat1.setBounds(100,270,200,50);
+
         
         room2.setLayout(null);
         JLabel roomL2 = new JLabel("Room #2");
@@ -1167,21 +1348,21 @@ public class Book {
         
         image2.setBackground(Color.red);
         check2.setOpaque(false);
-        JLabel mat2 = new JLabel("mattress");
+
         
         room2.add(image2);
         room2.add(roomL2);
         room2.add(descL2);
         room2.add(descL22);
         room2.add(check2);
-        room2.add(mat2);
+
         
         roomL2.setBounds(40,5,200,50);
         image2.setBounds(20,50,200,130);
         descL2.setBounds(33,180,200,50);
         descL22.setBounds(33,210,200,50);
         check2.setBounds(40,250,200,50);
-        mat2.setBounds(100,270,200,50);
+
         
         
         
@@ -1203,21 +1384,20 @@ public class Book {
         
         image3.setBackground(Color.red);
         check3.setOpaque(false);
-        JLabel mat3 = new JLabel("mattress");
         
         room3.add(image3);
         room3.add(roomL3);
         room3.add(descL3);
         room3.add(descL33);
         room3.add(check3);
-        room3.add(mat3);
+
         
         roomL3.setBounds(40,5,200,50);
         image3.setBounds(20,50,200,130);
         descL3.setBounds(33,180,200,50);
         descL33.setBounds(33,210,200,50);
         check3.setBounds(40,250,200,50);
-        mat3.setBounds(100,270,200,50);
+
         
         
         room4.setLayout(null);
@@ -1238,39 +1418,24 @@ public class Book {
         
         image4.setBackground(Color.red);
         check4.setOpaque(false);
-        JLabel mat4 = new JLabel("mattress");
+
+        
         
         room4.add(image4);
         room4.add(roomL4);
         room4.add(descL4);
         room4.add(descL44);
         room4.add(check4);
-        room4.add(mat4);
+
         
         roomL4.setBounds(40,5,200,50);
         image4.setBounds(20,50,170,130);
         descL4.setBounds(28,180,200,50);
         descL44.setBounds(28,210,200,50);
         check4.setBounds(20,250,200,50);
-        mat4.setBounds(100,270,200,50);
-        
-        
 
-        ButtonGroup group = new ButtonGroup();
-        group.add(check3);
-        group.add(check1);
-        group.add(check2);
-        group.add(check4);
         
-        selectRoom1.setBounds(50,310,150,30);
-        selectRoom2.setBounds(50,310,150,30);
-        selectRoom3.setBounds(50,310,150,30);
-        selectRoom4.setBounds(30,310,150,30);
         
-        room1.add(selectRoom1);
-        room2.add(selectRoom2);
-        room3.add(selectRoom3);
-        room4.add(selectRoom4);
         
         frame.add(design, BorderLayout.NORTH);  
         design.add(top, BorderLayout.SOUTH);
@@ -1444,7 +1609,7 @@ public class Book {
             exist = 1;
             Room();
             frame.dispose();
-          
+            reset = 0;
             
         }
         });
@@ -1541,6 +1706,7 @@ public class Book {
                  opt1.setSelected(true);
                  electric++;
                  
+                 
             }
             if (opt2.isSelected()) {
                 utilPrice += 200;
@@ -1594,6 +1760,44 @@ public class Book {
              utils  += " Bonfire,";
                opt10.setSelected(true);
                Bonfire = "Bonfire";
+            }
+            
+            
+            if(reset == 1){
+                if(check1.isSelected()){
+                roomTP += "Room #1, " ;
+                roomPrice += 1500;
+                check1.setEnabled(true);
+
+            }
+        
+
+            
+            if(check2.isSelected()){
+                roomTP += "Room #2, " ;
+                roomPrice += 1500;
+                check2.setEnabled(true);
+
+            }
+
+            
+            if(check3.isSelected()){
+            roomTP += "Room #3, " ;
+            roomPrice += 2000;
+            check3.setEnabled(true);
+
+        }
+      
+            if(check4.isSelected()){
+                roomTP += "Room #4, " ;
+                check4.setEnabled(true);
+
+            if(packageTP == "DayTour" || packageTP == "DayNight"){
+                roomPrice += 300;
+            } else {
+                roomPrice += 500;
+            }
+        }
             }
              
             Payment();
@@ -1793,6 +1997,9 @@ public class Book {
             burnerL = "";
             PackagePrice = 0;
             utilPrice = 0;
+            roomPrice = 0;
+            roomTP = "";
+            reset = 1;
            
             
         }
@@ -1869,21 +2076,28 @@ public class Book {
         
             if(packageTP == "DayTour" && weekWhat == "Weekends" ){
                  PackagePrice = 5000;
+                 packageCode = "dt-weekends";
             }
             else if(packageTP == "DayTour" && weekWhat == "Weekdays" ){
                  PackagePrice = 6000;
+                 packageCode = "dt-weekdays";
             }
             else if(packageTP == "DayNight" && weekWhat == "Weekends" ){
                  PackagePrice = 5000;
+                 packageCode = "dtn-weekends";
             }
             else if(packageTP == "DayNight" && weekWhat == "Weekdays" ){
+                
                  PackagePrice = 6000;
+                 packageCode = "dtn-weekdays";
             }
               else if(packageTP == "Overnight" && weekWhat == "Weekends" ){
                  PackagePrice = 7000;
+                 packageCode = "ot-weekends";
             }
               else if(packageTP == "Overnight" && weekWhat == "Weekdays"){
                  PackagePrice = 8000;
+                 packageCode = "ot-weekdays";
             }
                 
         
@@ -1974,6 +2188,16 @@ public class Book {
                                              JOptionPane.YES_NO_OPTION); 
                 if (response == JOptionPane.YES_OPTION) {
                      reservationTP = "Fully Paid";
+                  
+     
+                    
+                        paymentMethod = "GCASH";
+                        paymentDate = LocalDate.now();
+                        ReservationFee = 0;
+                        Amount = totals;
+                        Status = "Paid";        
+                                   INSERTION();
+
                     Reception();
                 
                 } 
@@ -1984,6 +2208,17 @@ public class Book {
                                              JOptionPane.YES_NO_OPTION); 
                 if (response == JOptionPane.YES_OPTION) {
                     reservationTP = "Paid Reservation Fee";
+
+                    
+                    
+                        paymentMethod = "CASH";
+                        paymentDate = LocalDate.now();
+                        ReservationFee = 2000;
+                        Amount = totals;
+                        Status = "Pending";    
+                                
+                                   INSERTION();
+                    
                     Reception();
                 
                 }
@@ -2249,7 +2484,7 @@ public class Book {
         full.add(roomP);
         
         JLabel roomTPY = new JLabel (roomTP);
-        roomTPY.setBounds(55,100,100,100);
+        roomTPY.setBounds(55,100,300,100);
         
         Line3.setBounds(0,130,1000,2);
         Line4.setBounds(0,170,1000,2);
@@ -2325,6 +2560,10 @@ public class Book {
             opt8.setSelected(false);
             opt9.setSelected(false);
             opt10.setSelected(false);
+            check1.setSelected(false);
+            check2.setSelected(false);
+            check3.setSelected(false);
+            check4.setSelected(false);
             new Home();
             frame.dispose();
           
@@ -2368,7 +2607,7 @@ public class Book {
     public static void main(String[] args) {
             Book pro = new Book();
             pro.createConnection();
-             Packages();
+            Packages();
     }  
     
 }
