@@ -35,7 +35,7 @@ public class About {
         top.setPreferredSize(new Dimension(200, 80));
         top.setBackground(Color.white);
 
-        JPanel top1 = new JPanel();
+        JPanel top1 = new JPanel(null);
         JPanel top2 = new JPanel();
 
         top.add(top1, BorderLayout.EAST);
@@ -46,6 +46,17 @@ public class About {
 
         top1.setBackground(Color.white);
         top2.setBackground(Color.white);
+        
+        ImageIcon iconLogo = new ImageIcon("C:\\Users\\AMD\\OneDrive\\Documents\\NetBeansProjects\\2ndSemProject\\src\\homepage\\image\\small.png");
+        Image imageResort99 = iconLogo.getImage();
+        Image modifiedimageResort99 = imageResort99.getScaledInstance(80, 65, java.awt.Image.SCALE_SMOOTH);
+        iconLogo = new ImageIcon(modifiedimageResort99);
+
+        JLabel iconicLogo = new JLabel();
+        iconicLogo.setIcon(iconLogo);
+        iconicLogo.setBounds(50,6,80, 65);
+        top1.add(iconicLogo);
+        
 
         // Nav Buttons
         JButton amenities = new JButton("AMENITIES");
