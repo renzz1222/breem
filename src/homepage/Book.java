@@ -749,6 +749,11 @@ public class Book {
     }
 
     public static void Packages() {
+        utils = "";
+roomPrice = 0;
+utilPrice = 0;
+roomTP =  "";
+
         JFrame frame = new JFrame();
         frame.setSize(1200, 800);
         frame.setTitle("Luz Ville Resort");
@@ -2135,6 +2140,8 @@ public class Book {
         textField.setBounds(0, 150, 200, 30);
         textField.setFont(new Font("Tohoma", Font.BOLD, 18));
         textField.setForeground(Color.black);
+        
+  
 
         JButton pay = new JButton("PAY");
         pay.setBackground(new Color(0x556B2F));
@@ -2147,6 +2154,14 @@ public class Book {
             public void actionPerformed(ActionEvent e) {
 
                 String amountPaid = textField.getText();
+                
+                if (amountPaid.matches("\\d+")) {
+                 int value = Integer.parseInt(amountPaid);
+                } else {
+                 JOptionPane.showMessageDialog(null, "Only numeric digits are allowed.");
+                 }
+                
+          
                 if (amountPaid.equals(TotalD) && GCash.isSelected()) {
                     int response = JOptionPane.showConfirmDialog(null, "Do you want to continue?", "Confirm",
                             JOptionPane.YES_NO_OPTION);
@@ -2198,6 +2213,8 @@ public class Book {
              
             }
         });
+        
+        
 
         pay.setBounds(0, 200, 200, 30);
 
