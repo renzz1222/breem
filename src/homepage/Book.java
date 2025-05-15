@@ -35,6 +35,7 @@ public class Book {
     static String middle;
     static String last;
     static String phoneNo;
+    static String email;
     static String packageTP;
     static String roomTP = "";
     static String utils = "";
@@ -53,6 +54,9 @@ public class Book {
     static int reset = 0;
 
     static int PackagePrice = 0;
+    
+    static JTextField emailField = new JTextField();
+        
 
     static JRadioButton opt1 = new JRadioButton("Electric Fan");
     static JRadioButton opt2 = new JRadioButton("Electric Kettle");
@@ -127,12 +131,13 @@ public class Book {
 
         try {
             Connection con = DriverManager.getConnection(url, username, password);
-            String insertCustomer = "INSERT INTO customer(LastName, FirstName, MiddleName, ContactNo) VALUES (?, ?, ?, ?)";
+            String insertCustomer = "INSERT INTO customer(LastName, FirstName, MiddleName, ContactNo, Email) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement stmt = con.prepareStatement(insertCustomer, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, last);
             stmt.setString(2, first);
             stmt.setString(3, middle);
             stmt.setString(4, phoneNo);
+            stmt.setString(5, email);
             stmt.executeUpdate();
 
             int customerId = 0; //GET THE RECENT INSERT
@@ -424,6 +429,7 @@ public class Book {
             mname = new JTextField(middle);
             lname = new JTextField(last);
             contact = new JTextField(phoneNo);
+            emailField = new JTextField(email);
 
         }
 
@@ -454,6 +460,16 @@ public class Book {
         contact.setBackground(new Color(217, 217, 217));
         contact.setBorder(null);
         contact.setForeground(Color.black);
+        
+         
+
+        emailField.setFont(new Font("Open Sans", Font.BOLD, 15));
+        emailField.setBackground(new Color(217, 217, 217));
+        emailField.setBorder(null);
+        emailField.setForeground(Color.black);
+
+
+
 
         JLabel phone = new JLabel("Phone Number");
 
@@ -464,9 +480,10 @@ public class Book {
         JLabel mn = new JLabel("Middle Name: ");
         JLabel ln = new JLabel("Last Name: ");
         JLabel ex = new JLabel("ex. (1234-567-8901)");
+        JLabel emailLabel = new JLabel("Email:");
 
         JPanel full = new JPanel(null);
-        full.setBounds(50, 100, 900, 450);
+        full.setBounds(50, 100, 1000, 450);
         full.setBackground(Color.white);
 
         f.setBounds(0, -30, 100, 100);
@@ -481,6 +498,11 @@ public class Book {
         phone.setBounds(0, 105, 200, 30);
         contact.setBounds(0, 130, 200, 30);
         ex.setBounds(0, 155, 200, 30);
+        
+        emailLabel.setBounds(750, 55, 100, 30);
+        emailField.setBounds(750, 30, 200, 30);
+        
+        
 
         contactLabel.setBounds(50, -25, 300, 200);
 
@@ -498,10 +520,11 @@ public class Book {
                 middle = (String) mname.getText();
                 last = (String) lname.getText();
                 phoneNo = (String) contact.getText();
+                email = (String) emailField.getText();
 
                 String ceck = chickin.getText();
                 checkNext = 0;
-                if (!first.isEmpty() && !middle.isEmpty() && !last.isEmpty() && !phoneNo.isEmpty() && !ceck.isEmpty()) {
+                if (!first.isEmpty() && !middle.isEmpty() && !last.isEmpty() && !phoneNo.isEmpty() && !ceck.isEmpty() && !email.isEmpty()){
                     Room();
                     frame.dispose();
                 } else {
@@ -549,9 +572,10 @@ public class Book {
         LocalDate today = LocalDate.now();
         int year = today.getYear();
         int month = today.getMonthValue();
-        int daysInMonth = YearMonth.of(year, month).lengthOfMonth();
+        int tday = today.getMonthValue();
+        int daysInMonth = YearMonth.of(year, month-1).lengthOfMonth();
 
-        LocalDate firstDay = LocalDate.of(year, month, 1);
+        LocalDate firstDay = LocalDate.of(year, month-1, 1);
         int startDayOfWeek = firstDay.getDayOfWeek().getValue() % 7;
         for (int i = 0; i < startDayOfWeek; i++) {
             calenBody.add(new JLabel(""));
@@ -574,6 +598,8 @@ public class Book {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        
+        
 
         final JButton[] lastClickedButton = {null};
         for (int day = 1; day <= daysInMonth; day++) {
@@ -584,7 +610,9 @@ public class Book {
             dayLabel.setOpaque(true);
             dayLabel.setBackground(Color.white);
             dayLabel.setFocusPainted(false);
-
+              
+        
+            
             if (bookedDates.contains(currentDate)) {
                 dayLabel.setBackground(Color.RED);
                 dayLabel.setForeground(Color.black);
@@ -657,6 +685,12 @@ public class Book {
 
             });
 
+            LocalDate todays = LocalDate.now();
+            boolean isPastDate = todays.isBefore(LocalDate.now());
+            if (isPastDate) {
+            dayLabel.setEnabled(false);
+            dayLabel.setBackground(Color.LIGHT_GRAY);
+            }
         }
 
         chickin.setFont(new Font("Tohoma", Font.BOLD, 16));
@@ -722,6 +756,8 @@ public class Book {
         full.add(fn);
         full.add(mn);
         full.add(ln);
+        full.add(emailLabel);
+        full.add(emailField);
         full.add(fname);
         full.add(mname);
         full.add(lname);
@@ -750,9 +786,9 @@ public class Book {
 
     public static void Packages() {
         utils = "";
-roomPrice = 0;
-utilPrice = 0;
-roomTP =  "";
+        roomPrice = 0;
+        utilPrice = 0;
+        roomTP =  "";
 
         JFrame frame = new JFrame();
         frame.setSize(1200, 800);
@@ -2334,6 +2370,7 @@ roomTP =  "";
                 middle = null;
                 last = null;
                 phoneNo = null;
+                email = null;
                 Videoke = "";
                 burnerL = "";
                 PackagePrice = 0;
@@ -2380,6 +2417,7 @@ roomTP =  "";
                 fname.setText("");
                 lname.setText("");
                 mname.setText("");
+                emailField.setText("");
                 contact.setText("");
                 chickin.setText("");
                 chickout.setText("");
@@ -2389,6 +2427,7 @@ roomTP =  "";
                 middle = null;
                 last = null;
                 phoneNo = null;
+                email = null;
                 Videoke = "";
                 burnerL = "";
                 PackagePrice = 0;
@@ -2435,6 +2474,7 @@ roomTP =  "";
                 reservationTP = "";
                 fname.setText("");
                 lname.setText("");
+                emailField.setText("");
                 mname.setText("");
                 contact.setText("");
                 chickin.setText("");
@@ -2445,6 +2485,7 @@ roomTP =  "";
                 middle = null;
                 last = null;
                 phoneNo = null;
+                email = null;
                 Videoke = "";
                 burnerL = "";
                 PackagePrice = 0;
@@ -2493,6 +2534,7 @@ roomTP =  "";
                 fname.setText("");
                 lname.setText("");
                 mname.setText("");
+                emailField.setText("");
                 contact.setText("");
                 chickin.setText("");
                 chickout.setText("");
@@ -2502,6 +2544,7 @@ roomTP =  "";
                 middle = null;
                 last = null;
                 phoneNo = null;
+                email = null;
                 Videoke = "";
                 burnerL = "";
                 PackagePrice = 0;
@@ -2548,6 +2591,7 @@ roomTP =  "";
                 reservationTP = "";
                 fname.setText("");
                 lname.setText("");
+                emailField.setText("");
                 mname.setText("");
                 contact.setText("");
                 chickin.setText("");
@@ -2558,6 +2602,7 @@ roomTP =  "";
                 middle = null;
                 last = null;
                 phoneNo = null;
+                email = null;
                 Videoke = "";
                 burnerL = "";
                 PackagePrice = 0;
@@ -2737,6 +2782,7 @@ roomTP =  "";
                 packagesK.setText(" ");
                 reservationTP = "";
                 fname.setText("");
+                emailField.setText("");
                 lname.setText("");
                 mname.setText("");
                 contact.setText("");
@@ -2748,6 +2794,7 @@ roomTP =  "";
                 middle = null;
                 last = null;
                 phoneNo = null;
+                email = null;
                 Videoke = "";
                 burnerL = "";
                 PackagePrice = 0;
